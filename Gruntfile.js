@@ -5,7 +5,7 @@ module.exports = function(grunt) {
         "string-replace": {
             dev: {
                 files: {
-                    'temp/abn_tree_directive.js': 'src/abn_tree_directive.js'
+                    'dist/abn_tree_directive.js': 'src/abn_tree_directive.js'
                 },
                 options: {
                     replacements: [
