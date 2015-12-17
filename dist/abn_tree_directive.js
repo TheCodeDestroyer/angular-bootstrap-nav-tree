@@ -49,7 +49,6 @@ module.directive('abnTree', [
 
                 dragOver = function(e) {
                     e.dataTransfer.dropEffect = 'move';
-                    // allows us to drop
                     if (e.preventDefault) e.preventDefault();
                     this.classList.add('over');
                     return false;
@@ -66,18 +65,15 @@ module.directive('abnTree', [
                 };
 
                 drop = function(e) {
-                    // Stops some browsers from redirecting.
                     if (e.preventDefault) e.preventDefault();
-
                     this.classList.remove('over');
-
-                    var item = document.getElementById(e.dataTransfer.getData('uid'));
-                    this.appendChild(item);
+                    var sourceBranch = e.dataTransfer.getData('uid'),
+                        destinationBranch = this.id;
 
                     scope.$apply(function(scope) {
                         var fn = scope.onDrop();
                         if (typeof fn !== 'undefined') {
-                            fn(item.id);
+                            fn(sourceBranch, destinationBranch);
                         }
                     });
 
@@ -86,6 +82,15 @@ module.directive('abnTree', [
 
                 scope.$watch('tree_rows', function(){
                     var branches = angular.element(document).find('ul li.abn-tree-row');
+
+                    angular.forEach(branches, function(branch) {
+                        branch.addEventListener('dragstart', dragStart, false);
+                        branch.addEventListener('dragend', dragEnd, false);
+                        branch.addEventListener('dragover', dragOver, false);
+                        branch.addEventListener('dragenter', dragEnter, false);
+                        branch.addEventListener('dragleave', dragLeave, false);
+                        branch.addEventListener('drop', drop, false);
+                    })
                 });
 
                 error = function(s) {
@@ -256,7 +261,7 @@ module.directive('abnTree', [
                             return branch.children = [];
                         }
                     });
-                    add_branch_to_list = function(level, branch, visible) {
+                    add_branch_to_list = function(uid, level, branch, visible) {
                         var child, child_visible, tree_icon, _i, _len, _ref, _results;
                         if (branch.expanded == null) {
                             branch.expanded = false;
@@ -271,6 +276,7 @@ module.directive('abnTree', [
                             }
                         }
                         scope.tree_rows.push({
+                            uid: uid,
                             level: level,
                             branch: branch,
                             label: branch.label,
@@ -283,7 +289,7 @@ module.directive('abnTree', [
                             for (_i = 0, _len = _ref.length; _i < _len; _i++) {
                                 child = _ref[_i];
                                 child_visible = visible && branch.expanded;
-                                _results.push(add_branch_to_list(level + 1, child, child_visible));
+                                _results.push(add_branch_to_list(child.uid, level + 1, child, child_visible));
                             }
                             return _results;
                         }
@@ -292,7 +298,7 @@ module.directive('abnTree', [
                     _results = [];
                     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
                         root_branch = _ref[_i];
-                        _results.push(add_branch_to_list(1, root_branch, true));
+                        _results.push(add_branch_to_list(root_branch.uid, 1, root_branch, true));
                     }
                     return _results;
                 };
