@@ -49,7 +49,6 @@ module.directive('abnTree', [
 
                 dragOver = function(e) {
                     e.dataTransfer.dropEffect = 'move';
-                    // allows us to drop
                     if (e.preventDefault) e.preventDefault();
                     this.classList.add('over');
                     return false;
@@ -66,18 +65,15 @@ module.directive('abnTree', [
                 };
 
                 drop = function(e) {
-                    // Stops some browsers from redirecting.
                     if (e.preventDefault) e.preventDefault();
-
                     this.classList.remove('over');
-
-                    var item = document.getElementById(e.dataTransfer.getData('uid'));
-                    //this.appendChild(item);
+                    var sourceBranch = e.dataTransfer.getData('uid'),
+                        destinationBranch = this.id;
 
                     scope.$apply(function(scope) {
                         var fn = scope.onDrop();
                         if (typeof fn !== 'undefined') {
-                            fn(item.id);
+                            fn(sourceBranch, destinationBranch);
                         }
                     });
 
